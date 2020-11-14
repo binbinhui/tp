@@ -57,11 +57,32 @@ public class Edit extends Command {
 
             String[] selectedProject = projectLine.split("--");
             String newData = "";
+            Boolean invalidDate = false;
+            String startDate = "";
+            String dueDate = "";
 
             for (int i = 1; i < selectedProject.length; i++) {
                 String currentCommandWord = selectedProject[i].split(" ", 2)[0];
                 String currentDescription = selectedProject[i].split(" ", 2)[1];
+                if (commandWord.equalsIgnoreCase("startdate")
+                        && currentCommandWord.equalsIgnoreCase("duedate")) {
+                    startDate = newDescription;
+                    dueDate = currentDescription;
+                }
+                if (commandWord.equalsIgnoreCase("duedate")
+                        && currentCommandWord.equalsIgnoreCase("startdate")) {
+                    startDate = currentDescription;
+                    dueDate = newDescription;
+                }
+            }
 
+            if (!new DateConverter(startDate, dueDate).dateValidator(startDate, dueDate)) {
+                throw new TrackerException("Please enter again");
+            }
+
+            for (int i = 1; i < selectedProject.length; i++) {
+                String currentCommandWord = selectedProject[i].split(" ", 2)[0];
+                String currentDescription = selectedProject[i].split(" ", 2)[1];
                 if (commandWord.equalsIgnoreCase(currentCommandWord)) {
                     String temp = selectedProject[i].replace(currentDescription, newDescription);
                     newData = newData.concat("--" + temp + " ");
@@ -69,6 +90,7 @@ public class Edit extends Command {
                     newData = newData.concat("--" + selectedProject[i]);
                 }
             }
+
             projects.set(index, new Project(newData));
             ui.printEditMessage(projects);
             storage.updateStorage(projects);
